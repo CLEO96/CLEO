@@ -1,3 +1,4 @@
+'EOF'
 #!/bin/bash
 
 set -e
@@ -26,7 +27,6 @@ dnf install -y \
     php-xml \
     php-curl \
     php-zip \
-    php-json \
     php-opcache \
     php-pdo \
     php-bcmath \
@@ -46,3 +46,4 @@ php -v
 composer --version
 
 echo "Composer instalado correctamente."
+EOF
