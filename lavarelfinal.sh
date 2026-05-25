@@ -1,30 +1,28 @@
 #!/bin/bash
 
-# =========================================================
-#      _                                _
-#     | |    __ _ _ __ __ ___   _____| |
-#     | |   / _` | '__/ _` \ \ / / _ \ |
-#     | |__| (_| | | | (_| |\ V /  __/ |
-#     |_____\__,_|_|  \__,_| \_/ \___|_|
-#
-# =========================================================
-#        Instalado de Laravel + MSSQL Hecho por Diegote
-#             Para AlmaLinux (BlackArch es mejor BTW)
-# =========================================================
-#
-#  Este script:
-#
-#   • Instala drivers de Microsoft SQL Server
-#   • Configura PHP para MSSQL
-#   • Crea un proyecto Laravel
-#   • Ajusta permisos automáticamente
-#   • Verifica que todo funcione
-#
-# =========================================================
+clear
+
+echo "========================================================="
+echo "      _                                _                "
+echo "     | |    __ _ _ __ __ ___   _____| |               "
+echo "     | |   / _\` | '__/ _\` \\ \\ / / _ \\ |               "
+echo "     | |__| (_| | | | (_| |\\ V /  __/ |               "
+echo "     |_____\\__,_|_|  \\__,_| \\_/ \\___|_|               "
+echo "                                                       "
+echo "========================================================="
+echo "        Instalador Laravel + MSSQL"
+echo "              Hecho por Diegote"
+echo ""
+echo "        ╔════════════════════════════╗"
+echo "        ║       AlmaLinux Setup      ║"
+echo "        ║    Laravel + PHP + SQL     ║"
+echo "        ╚════════════════════════════╝"
+echo ""
+echo "          BlackArch > cualquier cosa"
+echo "========================================================="
+echo ""
 
 set -e
-
-clear
 
 echo "========================================================="
 echo "         Instalador Laravel + MSSQL"
@@ -32,28 +30,99 @@ echo "========================================================="
 echo ""
 
 # ---------------------------------------------------------
-#  Paquetes necesarios del sistema
+#  Actualización del sistema
 # ---------------------------------------------------------
 
-echo "[+] Instalando dependencias del sistema..."
+echo "[+] Actualizando sistema..."
+echo ""
+
+sudo dnf update -y
+
+# ---------------------------------------------------------
+#  Repositorios extra
+# ---------------------------------------------------------
+
+echo ""
+echo "[+] Instalando EPEL..."
+echo ""
+
+sudo dnf install -y epel-release
+
+# ---------------------------------------------------------
+#  Utilidades base
+# ---------------------------------------------------------
+
+echo ""
+echo "[+] Instalando utilidades..."
 echo ""
 
 sudo dnf install -y \
-unixODBC \
-unixODBC-devel \
-gcc \
-gcc-c++ \
-make \
-autoconf \
-automake \
-re2c
+wget \
+curl \
+git \
+unzip \
+zip \
+tar \
+nano
 
 # ---------------------------------------------------------
-#  Repositorio Microsoft
+#  Apache
 # ---------------------------------------------------------
 
 echo ""
-echo "[+] Agregando repositorio de Microsoft..."
+echo "[+] Instalando Apache..."
+echo ""
+
+sudo dnf install -y httpd
+
+sudo systemctl enable --now httpd
+
+# ---------------------------------------------------------
+#  PHP
+# ---------------------------------------------------------
+
+echo ""
+echo "[+] Instalando PHP..."
+echo ""
+
+sudo dnf install -y \
+php \
+php-cli \
+php-common \
+php-mbstring \
+php-xml \
+php-curl \
+php-zip \
+php-bcmath \
+php-intl \
+php-gd \
+php-pdo \
+php-opcache \
+php-devel \
+php-pear
+
+# ---------------------------------------------------------
+#  Composer
+# ---------------------------------------------------------
+
+echo ""
+echo "[+] Instalando Composer..."
+echo ""
+
+curl -sS https://getcomposer.org/installer -o composer-setup.php
+
+sudo php composer-setup.php \
+--install-dir=/usr/local/bin \
+--filename=composer
+
+rm -f composer-setup.php
+
+# ---------------------------------------------------------
+#  Microsoft Repo
+# ---------------------------------------------------------
+
+echo ""
+echo "[+] Agregando repositorio Microsoft..."
 echo ""
 
 sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
@@ -71,43 +140,18 @@ echo ""
 
 sudo ACCEPT_EULA=Y dnf install -y \
 msodbcsql18 \
-mssql-tools18
+mssql-tools18 \
+unixODBC-devel
 
 # ---------------------------------------------------------
-#  PATH de herramientas MSSQL
-# ---------------------------------------------------------
-
-echo ""
-echo "[+] Configurando PATH..."
-echo ""
-
-echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.bashrc
-
-source ~/.bashrc
-
-# ---------------------------------------------------------
-#  Extensiones PHP para SQL Server
+#  Extensiones MSSQL PHP SIN PECL
 # ---------------------------------------------------------
 
 echo ""
-echo "[+] Instalando extensiones PHP SQLSRV..."
+echo "[+] Instalando módulos SQL Server para PHP..."
 echo ""
 
-sudo pecl install sqlsrv
-sudo pecl install pdo_sqlsrv
-
-# ---------------------------------------------------------
-#  Habilitar extensiones PHP
-# ---------------------------------------------------------
-
-echo ""
-echo "[+] Activando módulos PHP..."
-echo ""
-
-sudo bash -c 'cat > /etc/php.d/30-sqlsrv.ini << EOF
-extension=sqlsrv.so
-extension=pdo_sqlsrv.so
-EOF'
+sudo dnf install -y php-sqlsrv || true
 
 # ---------------------------------------------------------
 #  Reiniciar Apache
@@ -149,13 +193,13 @@ chmod -R 775 laravel-app/bootstrap/cache
 # ---------------------------------------------------------
 
 echo ""
-echo "[+] Verificando módulos SQLSRV..."
+echo "[+] Verificando módulos..."
 echo ""
 
-php -m | grep sqlsrv || true
+php -m | grep sql || true
 
 # ---------------------------------------------------------
-#  Información final
+#  Final
 # ---------------------------------------------------------
 
 echo ""
@@ -163,18 +207,14 @@ echo "========================================================="
 echo "              Instalación completada"
 echo "========================================================="
 echo ""
-echo " Ruta del proyecto:"
+echo " Proyecto:"
 echo "   /var/www/html/laravel-app"
 echo ""
-echo " Entrar al proyecto:"
+echo " Entrar:"
 echo "   cd /var/www/html/laravel-app"
 echo ""
-echo " Levantar servidor Laravel:"
+echo " Iniciar Laravel:"
 echo "   php artisan serve --host=0.0.0.0 --port=8000"
-echo ""
-echo " Módulos MSSQL instalados:"
-echo "   sqlsrv"
-echo "   pdo_sqlsrv"
 echo ""
 echo "========================================================="
 echo "               Todo Listooo UwU"
